@@ -3,6 +3,7 @@
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from urllib.parse import unquote
+from configparser import ConfigParser
 from utils import *
 import sys
 import logging
@@ -14,6 +15,10 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+# Config
+config = ConfigParser()
+config.read('config.ini')
+TOKEN = config.get('telegram','bot_token')
 
 # Data
 cont_xd = Contador()
@@ -76,7 +81,7 @@ def error(bot, update, error):
 def main():
     """Start the bot."""
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater(input('TOKEN'))
+    updater = Updater(TOKEN)
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
