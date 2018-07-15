@@ -15,11 +15,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-# Config
-config = ConfigParser()
-config.read('config.ini')
-TOKEN = config.get('telegram','bot_token')
-
 # Data
 cont_xd = Contador()
 
@@ -81,7 +76,7 @@ def error(bot, update, error):
 def main():
     """Start the bot."""
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater(TOKEN)
+    updater = Updater('462597261:AAEi3Vd62vXwQDjSNabK8LK0PpHbz-mK3QU')
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
