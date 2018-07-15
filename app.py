@@ -5,6 +5,7 @@ from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from urllib.parse import unquote
 from configparser import ConfigParser
 from utils import *
+import os
 import sys
 import logging
 import random
@@ -76,7 +77,7 @@ def error(bot, update, error):
 def main():
     """Start the bot."""
     # Create the EventHandler and pass it your bot's token.
-    updater = Updater('462597261:AAEi3Vd62vXwQDjSNabK8LK0PpHbz-mK3QU')
+    updater = Updater(os.getenv('my_bot_key'))
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
