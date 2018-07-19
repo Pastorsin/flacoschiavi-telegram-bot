@@ -3,7 +3,7 @@
 import random
 
 
-cont_xd = 0
+cont_xd = [0]
 
 
 def amigos():
@@ -28,5 +28,5 @@ def gracias():
 
 
 def xd():
-    cont_xd += 1
-    return 'Me dijeron {0} veces XD.'.format(cont_xd)
+    cont_xd[0] += 1
+    return 'Me dijeron {0} veces XD.'.format(cont_xd[0])
