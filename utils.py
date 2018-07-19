@@ -25,4 +25,5 @@ def gracias():
 
 
 def xd():
+    cont_xd += 1
     return 'Me dijeron {0} veces XD.'.format(cont_xd)
