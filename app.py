@@ -17,17 +17,13 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 # Data
-cont_xd = Contador()
-
-PORN = ("petardas", "pornhub", "serviporno", "xvideos", "redtube")
-
 DATA = {
-    'amigos': 'Vos no tenés amigos pelotudo.',
-    'quien': 'Tu vieja.',
-    'pocho': 'PochoOoOOOoOoOoOOoOoo',
-    'porno': 'http://www.{0}.com/'.format(random.choice(PORN)),
-    'gracias': 'De nada campeón.',
-    'xd': cont_xd.inc
+    'amigos': amigos,
+    'quien': quien,
+    'pocho': pocho,
+    'porno': porno,
+    'gracias': gracias,
+    'xd': xd
 }
 
 
@@ -61,13 +57,10 @@ def reply(bot, update):
     """Respond to the user."""
     message = update.message.text.lower()
     # Filter the words keys
-    words = list(filter(lambda x: x in DATA.keys(), message.split()))
+    words = list(filter(lambda key: key in message, DATA.keys()))
     # Respond
     for w in words:
-        # Increment XD COUNTER if message is 'XD'
-        send = 'XD: ' + str(DATA[w]()) if w == 'xd' else DATA[w]
-        update.message.reply_text(send)
-
+        update.message.reply_text(DATA[w]())
 
 def error(bot, update, error):
     """Log Errors caused by Updates."""
