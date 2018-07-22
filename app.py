@@ -23,7 +23,8 @@ DATA = {
     'pocho': pocho,
     'porno': porno,
     'gracias': gracias,
-    'xd': xd
+    'xd': xd,
+    'cara de': cara_de
 }
 
 

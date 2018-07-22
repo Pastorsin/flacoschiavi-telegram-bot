@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 import random
 
-
+with open('sustantivos.txt', 'r') as f:
+    NOUNS = tuple(f)
 cont_xd = [0]
 
 
@@ -30,3 +31,9 @@ def gracias():
 def xd():
     cont_xd[0] += 1
     return 'Me dijeron {0} veces XD.'.format(cont_xd[0])
+
+
+def cara_de():
+    return '{0} de {1}'.format(random.choice(NOUNS).strip(),
+        random.choice(NOUNS).strip())
+        
