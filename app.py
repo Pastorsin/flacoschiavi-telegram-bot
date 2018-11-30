@@ -85,7 +85,7 @@ def main():
     # Create a job queue timer
     j = updater.job_queue
     job_minute = j.run_daily(
-        callback_ariel, datetime.datetime.strptime('19:03', '%H:%M').time())
+        callback_ariel, datetime.datetime.strptime('19:40', '%H:%M').time())
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
