@@ -9,6 +9,7 @@ import os
 import sys
 import logging
 import random
+import datetime
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -45,13 +46,15 @@ def help(bot, update):
 def search(bot, update):
     """Send the first result of the Google search"""
     ns = "+".join(update.message.text.split()[1:])
-    update.message.reply_text(unquote("https://www.google.com/search?q="+ns+"&btnI"))
+    update.message.reply_text(
+        unquote("https://www.google.com/search?q=" + ns + "&btnI"))
 
 
 def video(bot, update):
     """Send the result list of Youtube"""
     ns = "+".join(update.message.text.split()[1:])
-    update.message.reply_text(unquote("https://www.youtube.com/search?q="+ns))
+    update.message.reply_text(
+        unquote("https://www.youtube.com/search?q=" + ns))
 
 
 def reply(bot, update):
@@ -63,15 +66,26 @@ def reply(bot, update):
     for w in words:
         update.message.reply_text(DATA[w]())
 
+
 def error(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
+
+
+def callback_ariel(bot, job):
+    bot.send_message(chat_id='-249336357',
+                     text=('Ari' + ('e' * random.randint(8, 18) + 'l')))
 
 
 def main():
     """Start the bot."""
     # Create the EventHandler and pass it your bot's token.
     updater = Updater(os.getenv('my_bot_key'))
+
+    # Create a job queue timer
+    j = updater.job_queue
+    job_minute = j.run_daily(
+        callback_ariel, datetime.datetime.strptime('19:03', '%H:%M').time())
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
