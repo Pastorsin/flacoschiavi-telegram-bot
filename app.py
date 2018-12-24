@@ -96,7 +96,7 @@ def callback_ariel(bot, job):
 
 def main():
     """Start the bot."""
-    updater = Updater(os.getenv())
+    updater = Updater(os.getenv('my_bot_key'))
 
     # Create a job queue timer
     j = updater.job_queue
