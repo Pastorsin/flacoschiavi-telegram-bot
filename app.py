@@ -72,20 +72,35 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
+def tomorrow_day():
+    """Return the week day of tomorrow day."""
+    return (datetime.datetime.today() + datetime.timedelta(1)).weekday()
+
+
+def random_time():
+    """Return a Time object with random hour and minute."""
+    hour = str(random.randint(0, 23))
+    minute = str(random.randint(0, 59))
+    return datetime.datetime.strptime(hour + ':' + minute, '%H:%M').time()
+
+
 def callback_ariel(bot, job):
-    bot.send_message(chat_id='-249336357',
-                     text=('Ari' + ('e' * random.randint(8, 18) + 'l')))
+    """Arieeeel timer."""
+    bot.send_message(chat_id='445457581',
+                     text=('Ari' + ('e' * random.randint(8, 25) + 'l')))
+    # Remove actual job from job queue
+    job.schedule_removal()
+    # Add new callback for tomorrow with a random hour
+    job.job_queue.run_daily(callback_ariel, random_time(), (tomorrow_day(), ))
 
 
 def main():
     """Start the bot."""
-    # Create the EventHandler and pass it your bot's token.
-    updater = Updater(os.getenv('my_bot_key'))
+    updater = Updater(os.getenv())
 
     # Create a job queue timer
     j = updater.job_queue
-    job_minute = j.run_daily(
-        callback_ariel, datetime.datetime.strptime('19:40', '%H:%M').time())
+    j.run_daily(callback_ariel, datetime.datetime.today())
 
     # Get the dispatcher to register handlers
     dp = updater.dispatcher
