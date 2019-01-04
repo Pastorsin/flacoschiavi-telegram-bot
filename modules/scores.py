@@ -74,6 +74,8 @@ class Mention():
     def is_bot(self, bot, group_key, user_key):
         return bot.getChatMember(group_key, user_key).user.is_bot
 
+    def is_same_user(self, update, user_key):
+        return update.message.from_user.id == user_key
 
     def reset_votes(self, bot, update):
         self.votes = []
@@ -100,9 +102,10 @@ class Mention():
             group_key = update.message.chat.id
             user_key = self.get_user_key(
                 mention_key, mentions_entities, group_key)
-            # Dont save if user is bot
+            # Dont save if user is bot or himself
             is_bot = self.is_bot(bot, group_key, user_key)
-            if bool(score) and (not is_bot):
+            same_user = self.is_same_user(update, user_key)
+            if bool(score) and (not is_bot) and (not same_user):
                 if self.is_between(int(score)) and self.can_vote(user_key):
                     self.save_score(str(group_key), str(user_key), int(score))
                     # Add vote of day

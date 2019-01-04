@@ -122,7 +122,7 @@ class Bot():
         self.add_handlers()
 
     def init_updater(self):
-        self.updater = Updater(os.get)
+        self.updater = Updater(os.getenv('my_bot_key'))
 
     def set_loggin(self):
         logging.basicConfig(
