@@ -105,7 +105,7 @@ class Mention():
             # Dont save if user is bot or himself
             is_bot = self.is_bot(bot, group_key, user_key)
             same_user = self.is_same_user(update, user_key)
-            if bool(score) and (not is_bot) and (same_user):
+            if bool(score) and (not is_bot) and (not same_user):
                 if self.is_between(int(score)) and self.can_vote(update.message.from_user.id):
                     self.save_score(str(group_key), str(user_key), int(score))
                     # Add vote of day
