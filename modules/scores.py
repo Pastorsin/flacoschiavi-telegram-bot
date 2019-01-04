@@ -63,7 +63,7 @@ class Mention():
 
     def send_successful_message(self, update, user_id):
         fullname = update.message.chat.get_member(user_id).user.full_name
-        votes = self.user_votes(user_id)
+        votes = self.user_votes(update.message.from_user.id)
         msg = 'Joya!! Voto realizado a {}. Te quedan {} votos'.format(
             fullname, votes)
         return msg
