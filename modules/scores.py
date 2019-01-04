@@ -108,8 +108,8 @@ class Mention():
         if not user_key:
             return 'No es miembro humano del grupo jujuj'
         same_user = self.is_same_user(update, user_key)
-        # if same_user:
-        #    return 'No te podes votar a vos mismo cabeza de plumero'
+        if same_user:
+            return 'No te podes votar a vos mismo cabeza de plumero'
         if not self.is_between(int(score)):
             return 'AAAAA FUERA DEL RANGOOO: {}, {}'.format(MIN, MAX - 1)
         if not self.can_vote(update.message.from_user.id):
@@ -124,7 +124,7 @@ class Mention():
         # Add vote of day
         self.add_vote(update.message.from_user.id)
         # Send successful message
-        return self.send_successful_message(update, update.message.from_user.id)
+        return self.send_successful_message(update, user_key)
 
     def reply(self, bot, update):
         update.message.reply_text(self.init_score(bot, update))
