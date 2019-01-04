@@ -1,0 +1,9 @@
+╔
+╟ Para votar
+║ ╚ @user puntos
+║
+╟ Voto hasta
+║ ╠ {} puntos como mínimo
+║ ╠ {} puntos como máximo
+║ ╚ 3 por día
+╚
