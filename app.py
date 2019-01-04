@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import os
+import json
 import random
 import logging
 import datetime
-import os
 from modules.utils import *
 from urllib.parse import unquote
 from telegram import MessageEntity
@@ -53,6 +54,7 @@ class CommandsManagment():
         dp.add_handler(CommandHandler("start", self.start))
         dp.add_handler(CommandHandler("search", self.search))
         dp.add_handler(CommandHandler("video", self.video))
+        dp.add_handler(CommandHandler("json", self.json))
 
     def start(self, bot, update):
         """Send a message when the command /start is issued."""
@@ -69,6 +71,13 @@ class CommandsManagment():
         ns = "+".join(update.message.text.split()[1:])
         update.message.reply_text(
             unquote("https://www.youtube.com/search?q=" + ns))
+
+    def json(self, bot, update):
+        if update.message.from_user.id == 445457581:
+            with open(os.path.join('data', 'scores.json'), 'r') as data:
+                j = json.load(data)
+                msg = json.dumps(j, indent=4, ensure_ascii=False)
+            bot.sendMessage(update.message.chat.id, text=msg)
 
 
 class MessagesManagment():
