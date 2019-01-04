@@ -8,6 +8,6 @@ class Utils():
         w = ''
         for ch in word:
             w += '[{}{}]'.format(ch.lower(), ch.upper())
-        return '.*{}*'.format(w)
+        return '.*{}\\.*'.format(w)
 
 

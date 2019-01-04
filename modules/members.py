@@ -37,5 +37,6 @@ class MembersCollection():
             self.members[group_key].remove(user)
 
     def get_by_username(self, group_key, username):
-        return next(filter(lambda user: user.username == username,
-                           self.members[group_key])).id
+        if group_key in self.members:
+            return next(filter(lambda user: user.username == username,
+                               self.members[group_key])).id

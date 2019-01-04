@@ -3,8 +3,8 @@
 
 import os
 import json
+import datetime
 from modules.utils import *
-from datetime import datetime
 from telegram import MessageEntity
 from modules.members import MembersCollection
 from telegram.ext import Updater, CommandHandler
@@ -19,7 +19,7 @@ class Mention():
 
     def __init__(self, dispatcher, update):
         self.votes = []
-        self.MAX_VOTES = 3
+        self.MAX_VOTES = 10
         self.add_handlers(dispatcher)
         self.add_jobs(update.job_queue)
 
@@ -28,7 +28,7 @@ class Mention():
             (Filters.entity(self.mention_type)), self.reply))
 
     def add_jobs(self, job_queue):
-        time = datetime.strptime('00:00', '%H:%M').time()
+        time = datetime.datetime.strptime('00:00', '%H:%M').time()
         job_queue.run_daily(self.reset_votes, time)
 
     def first_word(self, mentions):
@@ -66,7 +66,7 @@ class Mention():
         votes = self.user_votes(user_id)
         msg = 'Joya!! Voto realizado a {}. Te quedan {} votos'.format(
             fullname, votes)
-        update.message.reply_text(msg)
+        return msg
 
     def is_between(self, score):
         return score in range(MIN, MAX)
@@ -89,30 +89,45 @@ class Mention():
     def can_vote(self, user_id):
         return self.votes.count(user_id) < self.MAX_VOTES
 
-    def reply(self, bot, update):
+    def init_score(self, bot, update):
         # Filter the mention types of message entities
         mentions_entities = update.message.parse_entities([self.mention_type])
         # Detect if the first word is a mention
         mention_key = self.first_word(mentions_entities)
-        if mention_key:
-            # Detect if score is valid
-            mention_text = mentions_entities[mention_key]
-            score = self.valid_score(mention_text, update.message.text)
-            # Get user and group id for save data
-            group_key = update.message.chat.id
-            user_key = self.get_user_key(
-                mention_key, mentions_entities, group_key)
-            # Dont save if user is bot or himself
-            is_bot = self.is_bot(bot, group_key, user_key)
-            same_user = self.is_same_user(update, user_key)
-            if bool(score) and (not is_bot) and (not same_user):
-                if self.is_between(int(score)) and self.can_vote(update.message.from_user.id):
-                    self.save_score(str(group_key), str(user_key), int(score))
-                    # Add vote of day
-                    self.add_vote(update.message.from_user.id)
-                    # Send successful message
-                    self.send_successful_message(
-                        update, update.message.from_user.id)
+        if not mention_key:
+            return ''
+        # Detect if score is valid
+        mention_text = mentions_entities[mention_key]
+        score = self.valid_score(mention_text, update.message.text)
+        if not score:
+            return 'Puntaje inválido maquinola. @username puntaje'
+        # Get user and group id for save data
+        group_key = update.message.chat.id
+        user_key = self.get_user_key(mention_key, mentions_entities, group_key)
+        # Dont save if user is bot or himself or not member
+        if not user_key:
+            return 'No es miembro humano del grupo jujuj'
+        same_user = self.is_same_user(update, user_key)
+        # if same_user:
+        #    return 'No te podes votar a vos mismo cabeza de plumero'
+        if not self.is_between(int(score)):
+            return 'AAAAA FUERA DEL RANGOOO: {}, {}'.format(MIN, MAX - 1)
+        if not self.can_vote(update.message.from_user.id):
+            t = (datetime.datetime.strptime('00:00', '%H:%M') - datetime.timedelta(
+                hours=datetime.datetime.today().hour,
+                minutes=datetime.datetime.today().minute))
+            h = t.hour
+            m = t.minute
+            return 'Te quedaste sin votos. Volvé en {}hs {}m masomeno'.format(h, m)
+        # Save score in json
+        self.save_score(str(group_key), str(user_key), int(score))
+        # Add vote of day
+        self.add_vote(update.message.from_user.id)
+        # Send successful message
+        return self.send_successful_message(update, update.message.from_user.id)
+
+    def reply(self, bot, update):
+        update.message.reply_text(self.init_score(bot, update))
 
 
 class TextMention(Mention):
