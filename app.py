@@ -34,7 +34,7 @@ class ArielTimer():
 
     def ariel_callback(self, bot, job):
         """Arieeeel timer."""
-        bot.send_message(chat_id='445457581',
+        bot.send_message(chat_id='-249336357',
                          text=('Ari' + ('e' * random.randint(8, 25) + 'l')))
         # Remove actual job from job queue
         job.schedule_removal()
