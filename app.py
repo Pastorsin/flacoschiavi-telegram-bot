@@ -45,8 +45,9 @@ class ArielTimer():
         job.job_queue.run_daily(self.ariel_callback,
                                 r_t, (self.tomorrow_day(), ))
         # Comunicate the hour of next Arieeeeeeel
-        bot.send_message(
-            text='El siguiente ARIEEEEEL será a las {}'.format(r_t.strftime("%H:%M")))
+        msg = 'El siguiente ARIEEEEEL será a las {}'.format(
+            r_t.strftime("%H:%M"))
+        bot.send_message(chat_id='-249336357', text=msg)
 
 
 class CommandsManagment():
