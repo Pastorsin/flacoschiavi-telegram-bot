@@ -41,8 +41,12 @@ class ArielTimer():
         # Remove actual job from job queue
         job.schedule_removal()
         # Add new callback for tomorrow with a random hour
+        r_t = self.random_time()
         job.job_queue.run_daily(self.ariel_callback,
-                                self.random_time(), (self.tomorrow_day(), ))
+                                r_t, (self.tomorrow_day(), ))
+        # Comunicate the hour of next Arieeeeeeel
+        bot.send_message(
+            'El siguiente ARIEEEEEL será a las {}'.format(r_t.strftime("%H:%M")))
 
 
 class CommandsManagment():
@@ -128,8 +132,8 @@ class Bot():
     def __init__(self):
         self.init_updater()
         self.set_loggin()
-        self.add_jobs()
         self.add_handlers()
+        self.add_jobs()
 
     def init_updater(self):
         self.updater = Updater(os.getenv('my_bot_key'))
