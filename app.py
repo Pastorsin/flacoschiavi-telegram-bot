@@ -46,7 +46,7 @@ class ArielTimer():
                                 r_t, (self.tomorrow_day(), ))
         # Comunicate the hour of next Arieeeeeeel
         bot.send_message(
-            'El siguiente ARIEEEEEL será a las {}'.format(r_t.strftime("%H:%M")))
+            text='El siguiente ARIEEEEEL será a las {}'.format(r_t.strftime("%H:%M")))
 
 
 class CommandsManagment():
