@@ -23,8 +23,9 @@ class MembersCollection():
         user = update.message.from_user
         if group_key not in self.members:
             self.members[group_key] = []
-        if user not in self.members[group_key]:
-            self.members[group_key].append(user)
+        if user in self.members[group_key]:
+            self.members[group_key].remove(user)
+        self.members[group_key].append(user)
         print(self.members)
 
     def is_registred(self, group_key, user):
