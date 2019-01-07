@@ -4,32 +4,59 @@
 import os
 import json
 import datetime
-from modules.utils import *
 from telegram import MessageEntity
 from modules.members import MembersCollection
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
 MIN = -25
 MAX = 51
 
 
+class VotesManagment():
+    """docstring for VotesManagment"""
+
+    def __init__(self, updater):
+        self.votes = []
+        self.MAX_VOTES = 10
+        self.add_jobs(updater.job_queue)
+
+    def add_jobs(self, job_queue):
+        time = datetime.datetime.strptime('00:00', '%H:%M').time()
+        job_queue.run_daily(self.reset_votes, time)
+
+    def reset_votes(self, bot, update):
+        self.votes = []
+
+    def add_vote(self, user_id):
+        self.votes.append(user_id)
+
+    def user_votes(self, user_id):
+        return self.MAX_VOTES - self.votes.count(user_id)
+
+    def can_vote(self, update):
+        return self.votes.count(update.message.from_user.id) < self.MAX_VOTES
+
+    def msg_cant_vote(self):
+        t = (datetime.datetime.strptime('00:00', '%H:%M') - datetime.timedelta(
+            hours=datetime.datetime.today().hour,
+            minutes=datetime.datetime.today().minute))
+        h = t.hour
+        m = t.minute
+        return 'Te quedaste sin votos. Volvé en {}hs {}m masomeno'.format(h, m)
+
+
 class Mention():
     """docstring for ClassName"""
 
     def __init__(self, dispatcher, update):
-        self.votes = []
-        self.MAX_VOTES = 10
+        self.vote = VotesManagment()
         self.add_handlers(dispatcher)
         self.add_jobs(update.job_queue)
 
     def add_handlers(self, dispatcher):
         dispatcher.add_handler(MessageHandler(
             (Filters.entity(self.mention_type)), self.reply))
-
-    def add_jobs(self, job_queue):
-        time = datetime.datetime.strptime('00:00', '%H:%M').time()
-        job_queue.run_daily(self.reset_votes, time)
 
     def get_mentions_entities(self, update):
         """Returns a dict with (mention:word)"""
@@ -58,7 +85,8 @@ class Mention():
         return message[0]
 
     def is_valid_score(self, update):
-        """Returns if the mention is followed by a plus sign or minus sign and a number"""
+        """Returns if the mention is followed by a plus
+        sign or minus sign and a number"""
         score = self.get_score(update)
         return (score[0] in '+-') and score[1:].isdigit()
 
@@ -102,34 +130,18 @@ class Mention():
     def is_not_same_user(self, update):
         return update.message.from_user.id != self.get_user_id(update)
 
-    def reset_votes(self, bot, update):
-        self.votes = []
-
-    def add_vote(self, user_id):
-        self.votes.append(user_id)
-
-    def user_votes(self, user_id):
-        return self.MAX_VOTES - self.votes.count(user_id)
-
-    def can_vote(self, update):
-        return self.votes.count(update.message.from_user.id) < self.MAX_VOTES
-
-    def msg_cant_vote(self):
-        t = (datetime.datetime.strptime('00:00', '%H:%M') - datetime.timedelta(
-            hours=datetime.datetime.today().hour,
-            minutes=datetime.datetime.today().minute))
-        h = t.hour
-        m = t.minute
-        return 'Te quedaste sin votos. Volvé en {}hs {}m masomeno'.format(h, m)
-
     def checks(self):
         return {
-            self.is_first_word: 'Mencionaste a alguien, acordate que lo podes puntuar <.<',
+            self.is_first_word: 'Mencionaste a alguien, ' +
+                                'acordate que lo podes puntuar <.<',
             self.is_member: 'No es miembro humano del grupo jujuj',
-            self.is_not_same_user: 'No te podes votar a vos mismo cabeza de plumero',
-            self.is_valid_score: 'Puntaje inválido maquinola. @username puntaje',
-            self.is_between: 'AAAAA FUERA DEL RANGOOO: {}, {}'.format(MIN, MAX - 1),
-            self.can_vote: self.msg_cant_vote()
+            self.is_not_same_user: 'No te podes votar a vos mismo ' +
+                                'cabeza de plumero',
+            self.is_valid_score: 'Puntaje inválido maquinola.' +
+                                ' @username puntaje',
+            self.is_between: 'AAAAA FUERA DEL RANGOOO: ' +
+                                '{}, {}.format(MIN, MAX - 1)',
+            self.vote.can_vote: self.vote.msg_cant_vote()
         }
 
     def get_message(self, bot, update):
