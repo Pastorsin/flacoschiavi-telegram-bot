@@ -39,5 +39,6 @@ class MembersCollection():
 
     def get_by_username(self, group_key, username):
         if group_key in self.members:
-            return next(filter(lambda user: user.username == username,
-                               self.members[group_key])).id
+            l = list(filter(lambda user: user.username ==
+                            username, self.members[group_key]))
+            return l.pop().id if l else None

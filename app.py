@@ -137,7 +137,7 @@ class Bot():
         self.add_jobs()
 
     def init_updater(self):
-        self.updater = Updater(os.getenv('my_bot_key'))
+        self.updater = Updater('626880484:AAFkBHid1-F8ZdGwKF_TXjOL3sLHaAhJ6ik')
 
     def set_loggin(self):
         logging.basicConfig(

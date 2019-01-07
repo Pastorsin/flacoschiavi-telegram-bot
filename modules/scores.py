@@ -31,26 +31,50 @@ class Mention():
         time = datetime.datetime.strptime('00:00', '%H:%M').time()
         job_queue.run_daily(self.reset_votes, time)
 
-    def first_word(self, mentions):
-        """Return the mention if it is the first word of message."""
-        return next(filter((lambda mention: mention.offset == 0), mentions))
+    def get_mentions_entities(self, update):
+        """Returns a dict with (mention:word)"""
+        return update.message.parse_entities([self.mention_type])
 
-    def valid_score(self, username, message):
-        """Returns a score if it is valid."""
-        message = message.split()
+    def get_mention_offset_zero(self, update):
+        """Returns the mention in offset 0"""
+        entities = self.get_mentions_entities(update)
+        l = list(filter((lambda mention: mention.offset == 0), entities))
+        return l.pop() if l else None
+
+    def is_first_word(self, update):
+        """Returns if mention is the first word of message."""
+        return bool(self.get_mention_offset_zero(update))
+
+    def get_first_word(self, update):
+        """Returns the first word of mention"""
+        entities = self.get_mentions_entities(update)
+        return entities[self.get_mention_offset_zero(update)]
+
+    def get_score(self, update):
+        """"""
+        username = self.get_first_word(update)
+        message = update.message.text.split()
         message.remove(username)
-        if message:
-            sign = message[0][0]
-            score = message[0][1:]
-            return message[0] if ((sign in '+-') & score.isdigit()) else ''
+        return message[0]
+
+    def is_valid_score(self, update):
+        """Returns if the mention is followed by a plus sign or minus sign and a number"""
+        score = self.get_score(update)
+        return (score[0] in '+-') and score[1:].isdigit()
+
+    def is_member(self, update):
+        return bool(self.get_user_id(update))
 
     def get_score_data(self):
         """Return score json."""
         with open(os.path.join('data', 'scores.json'), 'r') as scores:
             return json.load(scores)
 
-    def save_score(self, group_key, user_key, score_value):
+    def save_score(self, update):
         """Save scores data in JSON"""
+        group_key = update.message.chat.id
+        user_key = self.get_user_id(update)
+        score_value = int(self.get_score(update))
         scores_json = self.get_score_data()
         with open(os.path.join('data', 'scores.json'), 'w') as scores:
             if (group_key in scores_json) and (user_key in scores_json[group_key]):
@@ -61,21 +85,22 @@ class Mention():
                 scores_json[group_key] = {user_key: score_value}
             json.dump(scores_json, scores, ensure_ascii=False)
 
-    def send_successful_message(self, update, user_id):
-        fullname = update.message.chat.get_member(user_id).user.full_name
+    def send_successful_message(self, update):
+        fullname = update.message.chat.get_member(
+            self.get_user_id(update)).user.full_name
         votes = self.user_votes(update.message.from_user.id)
         msg = 'Joya!! Voto realizado a {}. Te quedan {} votos'.format(
             fullname, votes)
         return msg
 
-    def is_between(self, score):
-        return score in range(MIN, MAX)
+    def is_between(self, update):
+        return int(self.get_score(update)) in range(MIN, MAX)
 
     def is_bot(self, bot, group_key, user_key):
         return bot.getChatMember(group_key, user_key).user.is_bot
 
-    def is_same_user(self, update, user_key):
-        return update.message.from_user.id == user_key
+    def is_not_same_user(self, update):
+        return update.message.from_user.id != self.get_user_id(update)
 
     def reset_votes(self, bot, update):
         self.votes = []
@@ -86,48 +111,41 @@ class Mention():
     def user_votes(self, user_id):
         return self.MAX_VOTES - self.votes.count(user_id)
 
-    def can_vote(self, user_id):
-        return self.votes.count(user_id) < self.MAX_VOTES
+    def can_vote(self, update):
+        return self.votes.count(update.message.from_user.id) < self.MAX_VOTES
 
-    def init_score(self, bot, update):
-        # Filter the mention types of message entities
-        mentions_entities = update.message.parse_entities([self.mention_type])
-        # Detect if the first word is a mention
-        mention_key = self.first_word(mentions_entities)
-        if not mention_key:
-            return ''
-        # Detect if score is valid
-        mention_text = mentions_entities[mention_key]
-        score = self.valid_score(mention_text, update.message.text)
-        if not score:
-            return 'Puntaje inválido maquinola. @username puntaje'
-        # Get user and group id for save data
-        group_key = update.message.chat.id
-        user_key = self.get_user_key(mention_key, mentions_entities, group_key)
-        # Dont save if user is bot or himself or not member
-        if not user_key:
-            return 'No es miembro humano del grupo jujuj'
-        same_user = self.is_same_user(update, user_key)
-        if same_user:
-            return 'No te podes votar a vos mismo cabeza de plumero'
-        if not self.is_between(int(score)):
-            return 'AAAAA FUERA DEL RANGOOO: {}, {}'.format(MIN, MAX - 1)
-        if not self.can_vote(update.message.from_user.id):
-            t = (datetime.datetime.strptime('00:00', '%H:%M') - datetime.timedelta(
-                hours=datetime.datetime.today().hour,
-                minutes=datetime.datetime.today().minute))
-            h = t.hour
-            m = t.minute
-            return 'Te quedaste sin votos. Volvé en {}hs {}m masomeno'.format(h, m)
-        # Save score in json
-        self.save_score(str(group_key), str(user_key), int(score))
+    def msg_cant_vote(self):
+        t = (datetime.datetime.strptime('00:00', '%H:%M') - datetime.timedelta(
+            hours=datetime.datetime.today().hour,
+            minutes=datetime.datetime.today().minute))
+        h = t.hour
+        m = t.minute
+        return 'Te quedaste sin votos. Volvé en {}hs {}m masomeno'.format(h, m)
+
+    def checks(self):
+        return {
+            self.is_first_word: 'Mencionaste a alguien, acordate que lo podes puntuar <.<',
+            self.is_member: 'No es miembro humano del grupo jujuj',
+            self.is_not_same_user: 'No te podes votar a vos mismo cabeza de plumero',
+            self.is_valid_score: 'Puntaje inválido maquinola. @username puntaje',
+            self.is_between: 'AAAAA FUERA DEL RANGOOO: {}, {}'.format(MIN, MAX - 1),
+            self.can_vote: self.msg_cant_vote()
+        }
+
+    def get_message(self, bot, update):
+        # Check before save score
+        for valid_msg, msg in self.checks().items():
+            if not valid_msg(update):
+                return msg
+        # Save score
+        self.save_score(update)
         # Add vote of day
         self.add_vote(update.message.from_user.id)
         # Send successful message
-        return self.send_successful_message(update, user_key)
+        return self.send_successful_message(update)
 
     def reply(self, bot, update):
-        update.message.reply_text(self.init_score(bot, update))
+        update.message.reply_text(self.get_message(bot, update))
 
 
 class TextMention(Mention):
@@ -136,9 +154,9 @@ class TextMention(Mention):
         self.mention_type = MessageEntity.TEXT_MENTION
         super(TextMention, self).__init__(dispatcher, update)
 
-    def get_user_key(self, mention, mentions_entities, group_id):
+    def get_user_id(self, update):
         """Returns user id"""
-        return mention.user.id
+        return self.get_mention_offset_zero(update).user.id
 
 
 class UsernameMention(Mention):
@@ -148,9 +166,10 @@ class UsernameMention(Mention):
         super(UsernameMention, self).__init__(dispatcher, update)
         self.members = MembersCollection(dispatcher)
 
-    def get_user_key(self, mention, mentions_entities, group_id):
+    def get_user_id(self, update):
         """Returns user id"""
-        username = mentions_entities[mention][1:]
+        username = self.get_first_word(update)[1:]
+        group_id = update.message.chat.id
         return self.members.get_by_username(group_id, username)
 
 
