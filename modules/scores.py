@@ -52,10 +52,10 @@ class VotesManagment():
 class MentionManagment():
     """docstring for ClassName"""
 
-    def __init__(self, updater):
-        self.vote = VotesManagment(updater)
-        self.score = ScoresManagment(updater)
+    def __init__(self, updater, vote):
         self.add_handlers(updater.dispatcher)
+        self.vote = vote
+        self.score = ScoresManagment(updater)
 
     def add_handlers(self, dispatcher):
         """Init bot handlers"""
@@ -84,9 +84,10 @@ class MentionManagment():
         """Returns a succesful message"""
         fullname = update.message.chat.get_member(
             self.get_user_id(update)).user.full_name
-        votes = self.user_votes(update.message.from_user.id)
+        votes = self.vote.user_votes(update.message.from_user.id)
         msg = 'Joya!! Voto realizado a {}. Te quedan {} votos'.format(
             fullname, votes)
+        print(msg)
         return msg
 
     def get_message(self, bot, update):
@@ -96,7 +97,8 @@ class MentionManagment():
             if not valid_mention(update):
                 return msg
         # Save score
-        self.score.save_score(update)
+        self.score.save_score(update, self.get_first_word(
+            update), self.get_user_id(update))
         # Add vote of day
         self.vote.add_vote(update.message.from_user.id)
         # Send successful message
@@ -132,7 +134,8 @@ class MentionManagment():
 
     def is_between(self, update):
         """Returns if score is in max and min range score"""
-        return self.score.is_between(update)
+        username = self.get_first_word(update)
+        return self.score.is_between(username, update)
 
     def is_not_same_user(self, update):
         """Returns if user is not himself"""
@@ -145,9 +148,9 @@ class MentionManagment():
 
 class TextMention(MentionManagment):
 
-    def __init__(self, updater):
+    def __init__(self, updater, vote):
         self.mention_type = MessageEntity.TEXT_MENTION
-        super(TextMention, self).__init__(updater)
+        super(TextMention, self).__init__(updater, vote)
 
     def get_user_id(self, update):
         """Returns user id"""
@@ -156,9 +159,9 @@ class TextMention(MentionManagment):
 
 class UsernameMention(MentionManagment):
 
-    def __init__(self, updater):
+    def __init__(self, updater, vote):
         self.mention_type = MessageEntity.MENTION
-        super(UsernameMention, self).__init__(updater)
+        super(UsernameMention, self).__init__(updater, vote)
         self.members = MembersCollection(updater)
 
     def get_user_id(self, update):
@@ -200,12 +203,13 @@ class ScoresManagment():
     def is_valid_score(self, username, update):
         """Returns if the mention is followed by a plus
         sign or minus sign and a number"""
-        score = self.get_score(update)
+        score = self.get_score(username, update)
         return (score[0] in '+-') and score[1:].isdigit()
 
-    def is_between(self, update):
+    def is_between(self, username, update):
         """Returns if score is in max and min range score"""
-        return int(self.get_score(update)) in range(self.MIN, self.MAX + 1)
+        score = int(self.get_score(username, update))
+        return score in range(self.MIN, self.MAX + 1)
 
     def scores_list(self, bot, update):
         """Send a message when the command /puntajes is issued."""
@@ -225,11 +229,10 @@ class ScoresManagment():
             else:
                 self.help(bot, update)
 
-    def save_score(self, update):
+    def save_score(self, update, username, user_key):
         """Save scores data in JSON"""
         group_key = update.message.chat.id
-        user_key = self.get_user_id(update)
-        score_value = int(self.get_score(update))
+        score_value = int(self.get_score(username, update))
         scores_json = self.get_score_data()
         with open(os.path.join('data', 'scores.json'), 'w') as scores:
             if (group_key in scores_json) and (user_key in scores_json[group_key]):

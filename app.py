@@ -8,7 +8,8 @@ import datetime
 from modules.utils import *
 from urllib.parse import unquote
 from telegram.ext import RegexHandler
-from modules.scores import MentionManagment
+from modules.scores import UsernameMention, TextMention
+from modules.scores import VotesManagment
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import MessageHandler, Filters
 
@@ -16,7 +17,7 @@ from telegram.ext import MessageHandler, Filters
 class ArielTimer():
 
     def __init__(self, updater):
-        self.add_jobs(updater.job_queueb)
+        self.add_jobs(updater.job_queue)
 
     def add_jobs(self, job_queue):
         job_queue.run_daily(self.ariel_callback, datetime.datetime.today())
@@ -129,12 +130,11 @@ class Bot():
 
     def __init__(self):
         self.init_updater()
-        self.set_loggin()
         self.add_handlers()
         self.add_jobs()
 
     def init_updater(self):
-        self.updater = Updater('626880484:AAFkBHid1-F8ZdGwKF_TXjOL3sLHaAhJ6ik')
+        self.updater = Updater(os.getenv('my_bot_key'))
 
     def add_jobs(self):
         ArielTimer(self.updater)
@@ -142,8 +142,9 @@ class Bot():
     def add_handlers(self):
         CommandsManagment(self.updater)
         MessagesManagment(self.updater)
-        UsernameMention(self.updater)
-        TextMention(self.updater)
+        vote = VotesManagment(self.updater)
+        TextMention(self.updater, vote)
+        UsernameMention(self.updater, vote)
 
     def start(self):
         self.updater.start_polling()

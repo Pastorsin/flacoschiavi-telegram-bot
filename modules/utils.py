@@ -9,5 +9,3 @@ class Utils():
         for ch in word:
             w += '[{}{}]'.format(ch.lower(), ch.upper())
         return '.*{}\\.*'.format(w)
-
-
