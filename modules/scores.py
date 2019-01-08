@@ -231,7 +231,8 @@ class ScoresManagment():
 
     def save_score(self, update, username, user_key):
         """Save scores data in JSON"""
-        group_key = update.message.chat.id
+        user_key = str(user_key)
+        group_key = str(update.message.chat.id)
         score_value = int(self.get_score(username, update))
         scores_json = self.get_score_data()
         with open(os.path.join('data', 'scores.json'), 'w') as scores:
