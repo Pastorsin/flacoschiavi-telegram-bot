@@ -4,48 +4,15 @@
 import os
 import json
 import random
-import datetime
+import logging
 from modules.utils import *
 from urllib.parse import unquote
 from telegram.ext import RegexHandler
-from modules.scores import UsernameMention, TextMention
 from modules.scores import VotesManagment
+from modules.scores import UsernameMention, TextMention
+from modules.storage import DBStorage
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import MessageHandler, Filters
-
-
-class ArielTimer():
-
-    def __init__(self, updater):
-        self.add_jobs(updater.job_queue)
-
-    def add_jobs(self, job_queue):
-        job_queue.run_daily(self.ariel_callback, datetime.datetime.today())
-
-    def tomorrow_day(self):
-        """Return the week day of tomorrow day."""
-        return (datetime.datetime.today() + datetime.timedelta(1)).weekday()
-
-    def random_time(self):
-        """Return a Time object with random hour and minute."""
-        hour = str(random.randint(0, 23))
-        minute = str(random.randint(0, 59))
-        return datetime.datetime.strptime(hour + ':' + minute, '%H:%M').time()
-
-    def ariel_callback(self, bot, job):
-        """Arieeeel timer."""
-        bot.send_message(chat_id='-249336357',
-                         text=('Ari' + ('e' * random.randint(8, 25) + 'l')))
-        # Remove actual job from job queue
-        job.schedule_removal()
-        # Add new callback for tomorrow with a random hour
-        r_t = self.random_time()
-        job.job_queue.run_daily(self.ariel_callback,
-                                r_t, (self.tomorrow_day(), ))
-        # Comunicate the hour of next Arieeeeeeel
-        msg = 'El siguiente ARIEEEEEL será a las {}'.format(
-            r_t.strftime("%H:%M"))
-        bot.send_message(chat_id='-249336357', text=msg)
 
 
 class CommandsManagment():
@@ -57,7 +24,6 @@ class CommandsManagment():
         dp.add_handler(CommandHandler("start", self.start))
         dp.add_handler(CommandHandler("search", self.search))
         dp.add_handler(CommandHandler("video", self.video))
-        dp.add_handler(CommandHandler("json", self.json))
 
     def start(self, bot, update):
         """Send a message when the command /start is issued."""
@@ -74,13 +40,6 @@ class CommandsManagment():
         ns = "+".join(update.message.text.split()[1:])
         update.message.reply_text(
             unquote("https://www.youtube.com/search?q=" + ns))
-
-    def json(self, bot, update):
-        if update.message.from_user.id == 445457581:
-            with open(os.path.join('data', 'scores.json'), 'r') as data:
-                j = json.load(data)
-                msg = json.dumps(j, indent=4, ensure_ascii=False)
-            bot.sendMessage(update.message.chat.id, text=msg)
 
 
 class MessagesManagment():
@@ -129,22 +88,25 @@ class MessagesManagment():
 class Bot():
 
     def __init__(self):
+        self.STORAGE = DBStorage()
         self.init_updater()
+        self.set_logging()
         self.add_handlers()
-        self.add_jobs()
+
+    def set_logging(self):
+        logging.basicConfig(
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+        logger = logging.getLogger(__name__)
 
     def init_updater(self):
         self.updater = Updater(os.getenv('my_bot_key'))
-
-    def add_jobs(self):
-        ArielTimer(self.updater)
 
     def add_handlers(self):
         CommandsManagment(self.updater)
         MessagesManagment(self.updater)
         vote = VotesManagment(self.updater)
-        TextMention(self.updater, vote)
-        UsernameMention(self.updater, vote)
+        TextMention(self.updater, vote, self.STORAGE)
+        UsernameMention(self.updater, vote, self.STORAGE)
 
     def start(self):
         self.updater.start_polling()

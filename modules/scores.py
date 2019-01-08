@@ -3,29 +3,40 @@
 
 import os
 import json
+import random
 import datetime
-from telegram import MessageEntity
+from modules.utils import Utils
 from modules.members import MembersCollection
+from telegram import MessageEntity
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
 
 class VotesManagment():
-    """docstring for VotesManagment"""
 
     def __init__(self, updater):
         self.votes = []
         self.MAX_VOTES = 10
-        self.RESET_TIME = datetime.datetime.strptime('00:00', '%H:%M')
         self.add_jobs(updater.job_queue)
 
     def add_jobs(self, job_queue):
         """Init jobs"""
-        job_queue.run_daily(self.reset_votes, self.RESET_TIME.time())
+        job_queue.run_daily(self.reset_votes, datetime.datetime.today())
 
-    def reset_votes(self, bot, update):
+    def reset_votes(self, bot, job):
         """Reset votes to zero"""
+        # Reset votes
         self.votes = []
+        # Send Arieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeel
+        bot.send_message(chat_id='-249336357',
+                         text=('Ari' + ('e' * random.randint(8, 25) + 'l')))
+        # Remove actual job from job queue
+        job.schedule_removal()
+        # Add new callback for tomorrow with a random hour
+        random_time = Utils().random_time()
+        tomorrow_day = Utils().tomorrow_day()
+        job.job_queue.run_daily(
+            self.reset_votes, random_time, (tomorrow_day, ))
 
     def add_vote(self, user_id):
         """Add vote to a user"""
@@ -41,21 +52,15 @@ class VotesManagment():
 
     def msg_cant_vote(self):
         """Returns a message if user cant vote"""
-        t = (self.RESET_TIME - datetime.timedelta(
-            hours=datetime.datetime.today().hour,
-            minutes=datetime.datetime.today().minute))
-        h = t.hour
-        m = t.minute
-        return 'Te quedaste sin votos. Volvé en {}hs {}m masomeno'.format(h, m)
+        return 'Te quedaste sin votos. Volvé cuando el flaco diga Arieeeeeeel'
 
 
 class MentionManagment():
-    """docstring for ClassName"""
 
-    def __init__(self, updater, vote):
+    def __init__(self, updater, vote, storage):
         self.add_handlers(updater.dispatcher)
         self.vote = vote
-        self.score = ScoresManagment(updater)
+        self.score = ScoresManagment(updater, storage)
 
     def add_handlers(self, dispatcher):
         """Init bot handlers"""
@@ -148,9 +153,9 @@ class MentionManagment():
 
 class TextMention(MentionManagment):
 
-    def __init__(self, updater, vote):
+    def __init__(self, updater, vote, storage):
         self.mention_type = MessageEntity.TEXT_MENTION
-        super(TextMention, self).__init__(updater, vote)
+        super(TextMention, self).__init__(updater, vote, storage)
 
     def get_user_id(self, update):
         """Returns user id"""
@@ -159,9 +164,9 @@ class TextMention(MentionManagment):
 
 class UsernameMention(MentionManagment):
 
-    def __init__(self, updater, vote):
+    def __init__(self, updater, vote, storage):
         self.mention_type = MessageEntity.MENTION
-        super(UsernameMention, self).__init__(updater, vote)
+        super(UsernameMention, self).__init__(updater, vote, storage)
         self.members = MembersCollection(updater)
 
     def get_user_id(self, update):
@@ -173,7 +178,8 @@ class UsernameMention(MentionManagment):
 
 class ScoresManagment():
 
-    def __init__(self, updater):
+    def __init__(self, updater, storage):
+        self.STORAGE = storage
         self.MIN = -25
         self.MAX = 50
         self.add_handlers(updater.dispatcher)
@@ -189,16 +195,19 @@ class ScoresManagment():
                        'r').read().format(self.MIN, self.MAX)
         update.message.reply_text(message)
 
+    def scores_list(self, bot, update):
+        """Send a message when the command /puntajes is issued."""
+        chat_id = update.message.chat.id
+        if self.STORAGE.is_chat_saved(chat_id):
+            update.message.reply_text(self.scores_message(update, chat_id))
+        else:
+            self.help(bot, update)
+
     def get_score(self, username, update):
         """Returns the score extracted from message"""
         message = update.message.text.split()
         message.remove(username)
         return message[0]
-
-    def get_score_data(self):
-        """Return score json."""
-        with open(os.path.join('data', 'scores.json'), 'r') as scores:
-            return json.load(scores)
 
     def is_valid_score(self, username, update):
         """Returns if the mention is followed by a plus
@@ -211,35 +220,18 @@ class ScoresManagment():
         score = int(self.get_score(username, update))
         return score in range(self.MIN, self.MAX + 1)
 
-    def scores_list(self, bot, update):
-        """Send a message when the command /puntajes is issued."""
-        with open(os.path.join('data', 'scores.json'), 'r') as scores:
-            scores_json = json.load(scores)
-            chat_id = str(update.message.chat.id)
-            if chat_id in scores_json:
-                group_scores = scores_json[chat_id]
-                scores_message = '╔\n'
-                for user_id, user_score in group_scores.items():
-                    chat = update.message.chat
-                    fullname = chat.get_member(user_id).user.full_name
-                    scores_message += '╟ {} : {} puntos. \n'.format(
-                        fullname, str(user_score))
-                scores_message += '╚ '
-                update.message.reply_text(scores_message)
-            else:
-                self.help(bot, update)
+    def scores_message(self, update, chat_id):
+        """Returns the scores list message"""
+        msg = '╔\n'
+        for user_id, score in self.STORAGE.get_scores(chat_id).items():
+            chat = update.message.chat
+            fullname = chat.get_member(user_id).user.full_name
+            msg += '╟ {} : {} puntos. \n'.format(fullname, score)
+        msg += '╚ '
+        return msg
 
-    def save_score(self, update, username, user_key):
-        """Save scores data in JSON"""
-        user_key = str(user_key)
-        group_key = str(update.message.chat.id)
-        score_value = int(self.get_score(username, update))
-        scores_json = self.get_score_data()
-        with open(os.path.join('data', 'scores.json'), 'w') as scores:
-            if (group_key in scores_json) and (user_key in scores_json[group_key]):
-                scores_json[group_key][user_key] += score_value
-            elif (group_key in scores_json):
-                scores_json[group_key][user_key] = score_value
-            else:
-                scores_json[group_key] = {user_key: score_value}
-            json.dump(scores_json, scores, ensure_ascii=False)
+    def save_score(self, update, username, user_id):
+        """Save scores data"""
+        chat_id = update.message.chat.id
+        score = int(self.get_score(username, update))
+        self.STORAGE.save_score(chat_id, user_id, score)
