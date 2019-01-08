@@ -52,10 +52,10 @@ class VotesManagment():
 class MentionManagment():
     """docstring for ClassName"""
 
-    def __init__(self, dispatcher, updater):
+    def __init__(self, updater):
         self.vote = VotesManagment(updater)
         self.score = ScoresManagment(updater)
-        self.add_handlers(dispatcher)
+        self.add_handlers(updater.dispatcher)
 
     def add_handlers(self, dispatcher):
         """Init bot handlers"""
@@ -145,9 +145,9 @@ class MentionManagment():
 
 class TextMention(MentionManagment):
 
-    def __init__(self, dispatcher, update):
+    def __init__(self, updater):
         self.mention_type = MessageEntity.TEXT_MENTION
-        super(TextMention, self).__init__(dispatcher, update)
+        super(TextMention, self).__init__(updater)
 
     def get_user_id(self, update):
         """Returns user id"""
@@ -156,10 +156,10 @@ class TextMention(MentionManagment):
 
 class UsernameMention(MentionManagment):
 
-    def __init__(self, dispatcher, update):
+    def __init__(self, updater):
         self.mention_type = MessageEntity.MENTION
-        super(UsernameMention, self).__init__(dispatcher, update)
-        self.members = MembersCollection(dispatcher)
+        super(UsernameMention, self).__init__(updater)
+        self.members = MembersCollection(updater)
 
     def get_user_id(self, update):
         """Returns user id"""
@@ -170,12 +170,12 @@ class UsernameMention(MentionManagment):
 
 class ScoresManagment():
 
-    def __init__(self, dispatcher, update):
+    def __init__(self, updater):
         self.MIN = -25
         self.MAX = 50
-        self.add_handlers(dispatcher, update)
+        self.add_handlers(updater.dispatcher)
 
-    def add_handlers(self, dispatcher, update):
+    def add_handlers(self, dispatcher):
         """Init bot handlers"""
         dispatcher.add_handler(CommandHandler("puntajes", self.scores_list))
         dispatcher.add_handler(CommandHandler("help", self.help))
@@ -185,24 +185,6 @@ class ScoresManagment():
         message = open(os.path.join('data', 'score_rules.txt'),
                        'r').read().format(self.MIN, self.MAX)
         update.message.reply_text(message)
-
-    def scores_list(self, bot, update):
-        """Send a message when the command /puntajes is issued."""
-        with open(os.path.join('data', 'scores.json'), 'r') as scores:
-            scores_json = json.load(scores)
-            chat_id = str(update.message.chat.id)
-            if chat_id in scores_json:
-                group_scores = scores_json[chat_id]
-                scores_message = '╔\n'
-                for user_id, user_score in group_scores.items():
-                    chat = update.message.chat
-                    fullname = chat.get_member(user_id).user.full_name
-                    scores_message += '╟ {} : {} puntos. \n'.format(
-                        fullname, str(user_score))
-                scores_message += '╚ '
-                update.message.reply_text(scores_message)
-            else:
-                self.help(bot, update)
 
     def get_score(self, username, update):
         """Returns the score extracted from message"""
@@ -224,6 +206,24 @@ class ScoresManagment():
     def is_between(self, update):
         """Returns if score is in max and min range score"""
         return int(self.get_score(update)) in range(self.MIN, self.MAX + 1)
+
+    def scores_list(self, bot, update):
+        """Send a message when the command /puntajes is issued."""
+        with open(os.path.join('data', 'scores.json'), 'r') as scores:
+            scores_json = json.load(scores)
+            chat_id = str(update.message.chat.id)
+            if chat_id in scores_json:
+                group_scores = scores_json[chat_id]
+                scores_message = '╔\n'
+                for user_id, user_score in group_scores.items():
+                    chat = update.message.chat
+                    fullname = chat.get_member(user_id).user.full_name
+                    scores_message += '╟ {} : {} puntos. \n'.format(
+                        fullname, str(user_score))
+                scores_message += '╚ '
+                update.message.reply_text(scores_message)
+            else:
+                self.help(bot, update)
 
     def save_score(self, update):
         """Save scores data in JSON"""

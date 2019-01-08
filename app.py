@@ -4,22 +4,19 @@
 import os
 import json
 import random
-import logging
 import datetime
 from modules.utils import *
 from urllib.parse import unquote
-from telegram import MessageEntity
 from telegram.ext import RegexHandler
-from configparser import ConfigParser
-from modules.scores import ScoresManagment
+from modules.scores import MentionManagment
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import MessageHandler, Filters
 
 
 class ArielTimer():
 
-    def __init__(self, job_queue):
-        self.add_jobs(job_queue)
+    def __init__(self, updater):
+        self.add_jobs(updater.job_queueb)
 
     def add_jobs(self, job_queue):
         job_queue.run_daily(self.ariel_callback, datetime.datetime.today())
@@ -52,8 +49,8 @@ class ArielTimer():
 
 class CommandsManagment():
 
-    def __init__(self, dispatcher):
-        self.add_handlers(dispatcher)
+    def __init__(self, updater):
+        self.add_handlers(updater.dispatcher)
 
     def add_handlers(self, dp):
         dp.add_handler(CommandHandler("start", self.start))
@@ -87,10 +84,10 @@ class CommandsManagment():
 
 class MessagesManagment():
 
-    def __init__(self, dispatcher):
+    def __init__(self, updater):
         self.PORN = ("petardas", "pornhub", "serviporno", "xvideos", "redtube")
         self.xd = 0
-        self.add_handlers(dispatcher)
+        self.add_handlers(updater.dispatcher)
 
     def add_handlers(self, dp):
         regex = Utils().to_regex
@@ -139,19 +136,14 @@ class Bot():
     def init_updater(self):
         self.updater = Updater('626880484:AAFkBHid1-F8ZdGwKF_TXjOL3sLHaAhJ6ik')
 
-    def set_loggin(self):
-        logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-        logger = logging.getLogger(__name__)
-
     def add_jobs(self):
-        ArielTimer(self.updater.job_queue)
+        ArielTimer(self.updater)
 
     def add_handlers(self):
-        dp = self.updater.dispatcher
-        CommandsManagment(dp)
-        MessagesManagment(dp)
-        ScoresManagment(dp, self.updater)
+        CommandsManagment(self.updater)
+        MessagesManagment(self.updater)
+        UsernameMention(self.updater)
+        TextMention(self.updater)
 
     def start(self):
         self.updater.start_polling()

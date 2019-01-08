@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from telegram import MessageEntity
-from telegram.ext import Updater, MessageHandler, Filters
+from telegram.ext import MessageHandler, Filters
 
 
 class MembersCollection():
 
-    def __init__(self, dispatcher):
+    def __init__(self, updater):
         self.members = {}
-        self.add_handlers(dispatcher)
+        self.add_handlers(updater.dispatcher)
 
     def add_handlers(self, dp):
         dp.add_handler(MessageHandler(Filters.text, self.save_member))
@@ -39,6 +38,6 @@ class MembersCollection():
 
     def get_by_username(self, group_key, username):
         if group_key in self.members:
-            l = list(filter(lambda user: user.username ==
-                            username, self.members[group_key]))
-            return l.pop().id if l else None
+            member = list(filter(lambda user: user.username ==
+                                 username, self.members[group_key]))
+            return member.pop().id if member else None
