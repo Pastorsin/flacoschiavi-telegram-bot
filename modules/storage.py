@@ -62,4 +62,4 @@ class DBStorage():
         FROM chat_member as cm
         WHERE cm.chat_id = {}'''.format(chat_id)
         cursor.execute(sql)
-        return cursor.fetchall()
+        return dict(cursor.fetchall())
