@@ -10,12 +10,16 @@ class DBStorage():
         self.cursor = self.conn.cursor
 
     def is_chat_saved(self, chat_id):
+        cursor = self.cursor()
         sql = 'SELECT * FROM chat WHERE chat_id = {}'.format(chat_id)
-        return self.cursor().execute(sql).fetchone()
+        cursor.execute(sql)
+        return cursor.fetchone()
 
     def is_member_saved(self, user_id):
+        cursor = self.cursor()
         sql = 'SELECT * FROM member WHERE member_id = {}'.format(user_id)
-        return self.cursor().execute(sql).fetchone()
+        cursor.execute(sql)
+        return cursor.fetchone()
         
 
     def save_chat(self, chat_id):
@@ -52,8 +56,10 @@ class DBStorage():
         self.conn.commit()
 
     def get_scores(self, chat_id):
+        cursor = self.cursor()
         sql = '''
         SELECT member_id, score
         FROM chat_member as cm
         WHERE cm.chat_id = {}'''.format(chat_id)
-        return self.cursor().execute(sql).fetchall()
+        cursor.execute(sql)
+        return cursor.fetchall()
