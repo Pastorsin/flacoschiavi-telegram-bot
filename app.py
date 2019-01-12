@@ -88,7 +88,7 @@ class MessagesManagment():
 class Bot():
 
     def __init__(self):
-        self.STORAGE = DBStorage
+        self.STORAGE = DBStorage()
         self.init_updater()
         self.set_logging()
         self.add_handlers()

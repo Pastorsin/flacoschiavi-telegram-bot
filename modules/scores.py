@@ -198,7 +198,7 @@ class ScoresManagment():
     def scores_list(self, bot, update):
         """Send a message when the command /puntajes is issued."""
         chat_id = update.message.chat.id
-        if self.STORAGE().is_chat_saved(chat_id):
+        if self.STORAGE.is_chat_saved(chat_id):
             update.message.reply_text(self.scores_message(update, chat_id))
         else:
             self.help(bot, update)
@@ -223,7 +223,7 @@ class ScoresManagment():
     def scores_message(self, update, chat_id):
         """Returns the scores list message"""
         msg = '╔\n'
-        for user_id, score in self.STORAGE().get_scores(chat_id).items():
+        for user_id, score in self.STORAGE.get_scores(chat_id).items():
             chat = update.message.chat
             fullname = chat.get_member(user_id).user.full_name
             msg += '╟ {} : {} puntos. \n'.format(fullname, score)
@@ -234,4 +234,4 @@ class ScoresManagment():
         """Save scores data"""
         chat_id = update.message.chat.id
         score = int(self.get_score(username, update))
-        self.STORAGE().save_score(chat_id, user_id, score)
+        self.STORAGE.save_score(chat_id, user_id, score)
