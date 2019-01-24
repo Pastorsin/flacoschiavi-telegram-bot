@@ -28,7 +28,7 @@ class VotesManagment():
         # Reset votes
         self.votes = []
         # Send Arieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeel
-        bot.send_message(chat_id='-249336357',
+        bot.send_message(chat_id='-1001170387616',
                          text=('Ari' + ('e' * random.randint(8, 25) + 'l')))
         # Remove actual job from job queue
         job.schedule_removal()
