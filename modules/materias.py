@@ -22,7 +22,7 @@ class ScrapDeMaterias():
     def avisoDeTodasLasMaterias(self):
         avisos = map(lambda materia: self.generarAvisos(
             materia), self.materias)
-        separador = '\n' + '╚' + ('═' * 20) + '\n'
+        separador = '\n' + '╚' + ('═' * 25) + '\n'
         return separador.join(avisos) + separador
 
     def informacionDeMateria(self, materia):
