@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import urllib.request
 import ssl
+import textwrap
 from bs4 import BeautifulSoup
 
 
@@ -41,7 +42,9 @@ class ScrapDeMaterias():
         return bool(self.horarios(materia))
 
     def tabular(self, texto):
-        return '╟─' + texto.replace('\n', '\n╟─')
+        lineas = texto.strip().split('\n')
+        texto_wrap = '\n'.join(textwrap.fill(linea,24) for linea in lineas)
+        return '╟'+texto_wrap.replace('\n','\n╟')
 
     def generarAvisoDiaDeComienzo(self, materia):
         diasDeComienzo = self.diasDeComienzo(materia)
@@ -57,7 +60,7 @@ class ScrapDeMaterias():
     def generarAvisos(self, materia):
         diasDeComienzo = self.generarAvisoDiaDeComienzo(materia)
         horarios = self.generarAvisoHorarios(materia)
-        aviso = '• {}\n╔HORARIOS:\n{}\n╟COMIENZO:\n{}'.format(
+        aviso = '• {}\n╔HORARIOS:\n{}\n╞\n╟COMIENZO:\n{}'.format(
             materia, horarios, diasDeComienzo)
         return aviso
 
