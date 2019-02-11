@@ -29,7 +29,7 @@ class VotesManagment():
                     'Matemática 3',
                     'Ingeniería de Software 2',
                     'Orientación a Objetos 2']
-        bot.send_message(chat_id='-283837698',
+        bot.send_message(chat_id='-1001170387616',
                          text=ScrapDeMaterias(materias).comenzarScrap())
 
     def reset_votes(self, bot, job):
@@ -37,7 +37,7 @@ class VotesManagment():
         # Reset votes
         self.votes = []
         # Send Arieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeel
-        bot.send_message(chat_id='-283837698',
+        bot.send_message(chat_id='-1001170387616',
                          text=('Ari' + ('e' * random.randint(8, 25) + 'l')))
         # Send info subject
         self.send_subject_info(bot)
