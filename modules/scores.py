@@ -7,6 +7,7 @@ import random
 import datetime
 from modules.utils import Utils
 from modules.members import MembersCollection
+from modules.materias import ScrapDeMaterias
 from telegram import MessageEntity
 from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
@@ -23,13 +24,23 @@ class VotesManagment():
         """Init jobs"""
         job_queue.run_daily(self.reset_votes, datetime.datetime.today())
 
+    def send_subject_info(self, bot):
+        materias = ['Conceptos y Paradigmas de Lenguajes de Programación',
+                    'Matemática 3',
+                    'Ingeniería de Software 2',
+                    'Orientación a Objetos 2']
+        bot.send_message(chat_id='-283837698',
+                         text=ScrapDeMaterias(materias).comenzarScrap())
+
     def reset_votes(self, bot, job):
         """Reset votes to zero"""
         # Reset votes
         self.votes = []
         # Send Arieeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeel
-        bot.send_message(chat_id='-1001170387616',
+        bot.send_message(chat_id='-283837698',
                          text=('Ari' + ('e' * random.randint(8, 25) + 'l')))
+        # Send info subject
+        self.send_subject_info(bot)
         # Remove actual job from job queue
         job.schedule_removal()
         # Add new callback for tomorrow with a random hour
