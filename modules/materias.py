@@ -20,9 +20,9 @@ class ScrapDeMaterias():
         return self.avisoDeTodasLasMaterias()
 
     def avisoDeTodasLasMaterias(self):
-        avisos = list(
-            map(lambda materia: self.generarAvisos(materia), self.materias))
-        separador = '\n' + '╚' +('═' * 20) + '\n'
+        avisos = map(lambda materia: self.generarAvisos(
+            materia), self.materias)
+        separador = '\n' + '╚' + ('═' * 20) + '\n'
         return separador.join(avisos) + separador
 
     def informacionDeMateria(self, materia):
@@ -43,8 +43,9 @@ class ScrapDeMaterias():
 
     def tabular(self, texto):
         lineas = texto.strip().split('\n')
-        texto_wrap = '\n'.join(textwrap.fill(linea,24) for linea in lineas)
-        return '╟'+texto_wrap.replace('\n','\n╟')
+        textoWrapeado = '\n'.join(
+            textwrap.fill(linea, 24) for linea in lineas)
+        return '╟' + textoWrapeado.replace('\n', '\n╟')
 
     def generarAvisoDiaDeComienzo(self, materia):
         diasDeComienzo = self.diasDeComienzo(materia)
