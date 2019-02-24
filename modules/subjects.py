@@ -132,6 +132,7 @@ if __name__ == '__main__':
     subjects = ['Conceptos y Paradigmas de Lenguajes de Programación',
                 'Matemática 3',
                 'Ingeniería de Software 2',
-                'Orientación a Objetos 2']
+                'Orientación a Objetos 2',
+                'Concurrencia y Paralelismo']
     url = 'https://gestiondeaulas.info.unlp.edu.ar/cursadas/'
     print(SubjectsList(subjects, url).get_announcements())

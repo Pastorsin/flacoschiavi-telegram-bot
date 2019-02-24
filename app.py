@@ -11,6 +11,7 @@ from telegram.ext import RegexHandler
 from modules.scores import VotesManagment
 from modules.scores import UsernameMention, TextMention
 from modules.storage import DBStorage
+from modules.subjects import SubjectsList
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import MessageHandler, Filters
 
@@ -24,6 +25,7 @@ class CommandsManagment():
         dp.add_handler(CommandHandler("start", self.start))
         dp.add_handler(CommandHandler("search", self.search))
         dp.add_handler(CommandHandler("video", self.video))
+        dp.add_handler(CommandHandler("facultad", self.send_subject_info))
 
     def start(self, bot, update):
         """Send a message when the command /start is issued."""
@@ -40,6 +42,15 @@ class CommandsManagment():
         ns = "+".join(update.message.text.split()[1:])
         update.message.reply_text(
             unquote("https://www.youtube.com/search?q=" + ns))
+
+    def send_subject_info(self, bot, update):
+        subjects = ['Conceptos y Paradigmas de Lenguajes de Programación',
+                    'Matemática 3',
+                    'Ingeniería de Software 2',
+                    'Orientación a Objetos 2']
+        url = 'https://gestiondeaulas.info.unlp.edu.ar/cursadas/'
+        announcements = SubjectsList(subjects, url).get_announcements()
+        bot.send_message(chat_id='-1001170387616', text=announcements)
 
 
 class MessagesManagment():
