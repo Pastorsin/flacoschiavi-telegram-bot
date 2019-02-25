@@ -50,7 +50,7 @@ class CommandsManagment():
                     'Orientación a Objetos 2']
         url = 'https://gestiondeaulas.info.unlp.edu.ar/cursadas/'
         announcements = SubjectsList(subjects, url).get_announcements()
-        bot.send_message(chat_id='-1001170387616', text=announcements)
+        update.message.reply_text(announcements)
 
 
 class MessagesManagment():
