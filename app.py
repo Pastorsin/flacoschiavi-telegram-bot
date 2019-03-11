@@ -124,7 +124,6 @@ class Bot():
 
     def start(self):
         self.updater.start_polling()
-        Scrap(self.updater.bot)
 
 if __name__ == '__main__':
     Bot().start()
