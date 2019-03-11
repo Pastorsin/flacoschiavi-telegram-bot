@@ -5,13 +5,16 @@ import os
 import json
 import random
 import logging
+import threading
 from modules.utils import *
 from urllib.parse import unquote
+from telegram import Bot
 from telegram.ext import RegexHandler
 from modules.scores import VotesManagment
 from modules.scores import UsernameMention, TextMention
 from modules.storage import DBStorage
 from modules.subjects import SubjectsList
+from modules.ingscrap import Scrap
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import MessageHandler, Filters
 
@@ -121,7 +124,7 @@ class Bot():
 
     def start(self):
         self.updater.start_polling()
-
+        Scrap(self.updater.bot)
 
 if __name__ == '__main__':
     Bot().start()
