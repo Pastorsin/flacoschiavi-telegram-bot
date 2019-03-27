@@ -2,13 +2,16 @@
 # -*- coding: utf-8 -*-
 
 import os
+import re
 import json
 import random
 import logging
 import threading
-from modules.utils import *
+import urllib.parse
+import urllib.request
 from urllib.parse import unquote
 from telegram import Bot
+from modules.utils import *
 from telegram.ext import RegexHandler
 from modules.scores import VotesManagment
 from modules.scores import UsernameMention, TextMention
@@ -40,11 +43,19 @@ class CommandsManagment():
         update.message.reply_text(
             unquote("https://www.google.com/search?q=" + ns + "&btnI"))
 
+    def getFirstYoutubeVideo(self, video_name):
+        query_string = urllib.parse.urlencode({"search_query" : video_name})
+        html_content = urllib.request.urlopen(
+            "http://www.youtube.com/results?" + query_string)
+        search_results = re.findall(
+            r'href=\"\/watch\?v=(.{11})', html_content.read().decode())
+        return ("http://www.youtube.com/watch?v=" + search_results[0])
+
     def video(self, bot, update):
         """Send the result list of Youtube"""
         ns = "+".join(update.message.text.split()[1:])
         update.message.reply_text(
-            unquote("https://www.youtube.com/search?q=" + ns))
+            unquote(self.getFirstYoutubeVideo(ns)))
 
     def send_subject_info(self, bot, update):
         subjects = ['Conceptos y Paradigmas de Lenguajes de Programación',
