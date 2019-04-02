@@ -70,7 +70,6 @@ class CommandsManagment():
 class MessagesManagment():
 
     def __init__(self, updater):
-        self.PORN = ("petardas", "pornhub", "serviporno", "xvideos", "redtube")
         self.xd = 0
         self.add_handlers(updater.dispatcher)
 
@@ -103,8 +102,8 @@ class MessagesManagment():
         update.message.reply_text('PochoOoOOOoOoOoOOoOoo')
 
     def porno_reply(self, bot, update):
-        msg = 'http://www.{0}.com/'.format(random.choice(self.PORN))
-        update.message.reply_text(msg)
+        request = urllib.request.urlopen('http://pornhub.com/random')
+        update.message.reply_text(request.url)
 
     def gracias_reply(self, bot, update):
         update.message.reply_text('De nada campeón.')
