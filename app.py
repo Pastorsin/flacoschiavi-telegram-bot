@@ -18,6 +18,7 @@ from modules.scores import UsernameMention, TextMention
 from modules.storage import DBStorage
 from modules.subjects import SubjectsList
 from modules.ingscrap import Scrap
+from modules.voucherscrap import VoucherScrap
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import MessageHandler, Filters
 
@@ -32,6 +33,7 @@ class CommandsManagment():
         dp.add_handler(CommandHandler("search", self.search))
         dp.add_handler(CommandHandler("video", self.video))
         dp.add_handler(CommandHandler("facultad", self.send_subject_info))
+        dp.add_handler(CommandHandler("voucher", self.voucher))
 
     def start(self, bot, update):
         """Send a message when the command /start is issued."""
@@ -44,7 +46,7 @@ class CommandsManagment():
             unquote("https://www.google.com/search?q=" + ns + "&btnI"))
 
     def getFirstYoutubeVideo(self, video_name):
-        query_string = urllib.parse.urlencode({"search_query" : video_name})
+        query_string = urllib.parse.urlencode({"search_query": video_name})
         html_content = urllib.request.urlopen(
             "http://www.youtube.com/results?" + query_string)
         search_results = re.findall(
@@ -65,6 +67,11 @@ class CommandsManagment():
         url = 'https://gestiondeaulas.info.unlp.edu.ar/cursadas/'
         announcements = SubjectsList(subjects, url).get_announcements()
         update.message.reply_text(announcements)
+
+    def voucher(self, bot, update):
+        """Send voucher unlp info when the command /voucher is issued."""
+        voucher = VoucherScrap().get_voucher()
+        update.message.reply_text(voucher)
 
 
 class MessagesManagment():
@@ -134,6 +141,7 @@ class Bot():
 
     def start(self):
         self.updater.start_polling()
+
 
 if __name__ == '__main__':
     Bot().start()
