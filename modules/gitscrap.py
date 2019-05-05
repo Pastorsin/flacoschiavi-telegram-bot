@@ -6,7 +6,7 @@ class GitScrap():
 
     def __init__(self):
         self.URL = "https://github.com/Pastorsin/" + \
-            "test-repo/commits/master"
+            "ingenieria-de-software-ii/commits/master"
         self.exec_scrap()
         self.last_commits = self.get_commits_info()
 
