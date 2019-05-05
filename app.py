@@ -17,7 +17,7 @@ from modules.scores import VotesManagment
 from modules.scores import UsernameMention, TextMention
 from modules.storage import DBStorage
 from modules.subjects import SubjectsList
-from modules.ingscrap import Scrap
+from modules.gitscrap import GitScrap
 from modules.voucherscrap import VoucherScrap
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import MessageHandler, Filters
@@ -126,7 +126,8 @@ class Bot():
 
     def set_logging(self):
         logging.basicConfig(
-            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            level=logging.INFO)
         logger = logging.getLogger(__name__)
 
     def init_updater(self):
@@ -141,6 +142,22 @@ class Bot():
 
     def start(self):
         self.updater.start_polling()
+        self.start_polling_git(self.updater.bot)
+
+    def start_polling_git(self, bot):
+        gs = GitScrap()
+        while True:
+            gs.exec_scrap()
+            if gs.there_new_commits():
+                self.send_new_commits_message(gs, bot)
+                gs.update_commits()
+            time.sleep(8)
+
+    def send_commit_info(self, git, bot):
+        for autor, commit in gs.get_new_commits():
+            bot.send_message(
+                chat_id='445457581',
+                text='Nuevo commit de {} -> {}'.format(autor, commit))
 
 
 if __name__ == '__main__':
