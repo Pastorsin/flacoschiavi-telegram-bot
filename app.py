@@ -151,7 +151,7 @@ class Bot():
                 gs.update_commits()
             time.sleep(8)
 
-    def send_commit_info(self, git, bot):
+    def send_new_commits_message(self, git, bot):
         for autor, commit in gs.get_new_commits():
             bot.send_message(
                 chat_id='445457581',
