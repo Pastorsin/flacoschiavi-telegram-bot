@@ -4,7 +4,7 @@ import urllib.request
 
 class GitScrap():
 
-    def __init__(self, bot):
+    def __init__(self):
         self.URL = "https://github.com/Pastorsin/" + \
             "test-repo/commits/master"
         self.exec_scrap()
