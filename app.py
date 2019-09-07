@@ -16,7 +16,8 @@ from modules.scores import UsernameMention, TextMention
 from modules.storage import DBStorage
 from modules.subjects import SubjectsList
 from modules.gitscrap import GitScrap
-from modules.voucherscrap import VoucherScrap
+from modules.vouchers import LaFuenteVoucher, FranjaMoradaVoucher
+from modules.vouchers import VoucherNotAvailable
 from telegram.ext import Updater, CommandHandler
 from telegram.ext import MessageHandler, Filters
 
@@ -24,6 +25,10 @@ from telegram.ext import MessageHandler, Filters
 class CommandsManagment():
 
     def __init__(self, updater):
+        self.scrappers = [
+            FranjaMoradaVoucher(),
+            LaFuenteVoucher()
+        ]
         self.add_handlers(updater.dispatcher)
 
     def add_handlers(self, dp):
@@ -68,8 +73,16 @@ class CommandsManagment():
 
     def voucher(self, bot, update):
         """Send voucher unlp info when the command /voucher is issued."""
-        voucher = VoucherScrap().get_voucher()
-        update.message.reply_text(voucher)
+        message = update.message
+        message.reply_text("Probá alguno de estos:")
+        self.reply_voucher_options(message)
+
+    def reply_voucher_options(self, message):
+        for scrap in self.scrappers():
+            try:
+                message.reply_text(scrap.get_voucher())
+            except VoucherNotAvailable:
+                continue
 
 
 class MessagesManagment():
