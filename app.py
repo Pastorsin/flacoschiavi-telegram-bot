@@ -78,7 +78,7 @@ class CommandsManagment():
         self.reply_voucher_options(message)
 
     def reply_voucher_options(self, message):
-        for scrap in self.scrappers():
+        for scrap in self.scrappers:
             try:
                 message.reply_text(scrap.get_voucher())
             except VoucherNotAvailable:

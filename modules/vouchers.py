@@ -54,13 +54,3 @@ class FranjaMoradaVoucher(Voucher):
 
     def html(self):
         return self.response.text.lower()
-
-
-if __name__ == '__main__':
-    
-    print("Probá alguno de estos:")
-    for scrap in scrappers:
-        try:
-            print(scrap.get_voucher())
-        except VoucherNotAvailable:
-            continue
